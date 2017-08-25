@@ -12,11 +12,16 @@ KnightBoard::KnightBoard(const pair<int, int>& boardSize, const string& mapFileN
 	createMap(mapFileName);
 }
 
-bool KnightBoard::isMoveValid(const pair<int, int>& startPoint, const pair<int, int>& endPoint) const {
+bool KnightBoard::isMoveValid(const pair<int, int>& startPoint, const pair<int, int>& finishPoint) const {
+	pair<int, int> endPoint = finishPoint;
 	double distance = (startPoint.first - endPoint.first) * (startPoint.first - endPoint.first) +
 		(startPoint.second - endPoint.second) * (startPoint.second - endPoint.second);
-	if (distance != knightMoveDistance)
-		return false;
+	if (distance != knightMoveDistance) {
+		if (_teleportSquares.find(endPoint) != _teleportSquares.end()) 
+			endPoint = *find_if(_teleportSquares.begin(), _teleportSquares.end(), [endPoint](pair<int, int> point) { return point != endPoint; });
+		else
+			return false; 
+	}
 	bool firstMoveValid = _barrierSquares.find({ startPoint.first, endPoint.second }) == _barrierSquares.end()
 		&& _barrierSquares.find({ startPoint.first, (startPoint.second + endPoint.second) / 2 }) == _barrierSquares.end();
 	bool secondMoveValid = _barrierSquares.find({ endPoint.first, startPoint.second }) == _barrierSquares.end()
@@ -118,15 +123,17 @@ void KnightBoard::createNextMoves(multimap<int, pair<int, int>>& points, pair<in
 	nextPoints.erase(remove_if(nextPoints.begin(), nextPoints.end(), [&](pair<int, int> point) {
 		return !isPointValid(point) || _viewedPoints.find(point) != _viewedPoints.end() || !isMoveValid(startMove, point); }), nextPoints.end());
 
-	for (auto& nextPoint : nextPoints) {				
-		int newPrice = isMinimumMode ? minimumMovePrice(startMove, nextPoint) : maximumMovePrice(startMove, nextPoint) ;
-		newPrice += label;
 
+	for (auto& nextPoint : nextPoints) {
 		if (_teleportSquares.find(nextPoint) != _teleportSquares.end()) {
 			nextPoint = *find_if(_teleportSquares.begin(), _teleportSquares.end(), [nextPoint](pair<int, int> point) { return point != nextPoint; });
 			if (_viewedPoints.find(nextPoint) != _viewedPoints.end())
 				continue;
 		}
+		int newPrice = isMinimumMode ? minimumMovePrice(startMove, nextPoint) : maximumMovePrice(startMove, nextPoint) ;
+		newPrice += label;
+
+
 		auto it = find_if(points.begin(), points.end(), [&](pair<int, pair<int, int>> point) { return point.second == nextPoint; });
 		if (it != end(points)) {
 			if (newPrice < (*it).first) {
