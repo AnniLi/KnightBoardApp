@@ -45,7 +45,6 @@ private:
 
 	const int lavaMoves = 5;
 	const int waterMoves = 3;
-	const int invalidMove = INT_MAX;
 	const int knightMoveDistance = 5;
 	bool isMinimumMode = true;
 };

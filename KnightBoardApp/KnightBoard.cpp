@@ -122,9 +122,11 @@ void KnightBoard::createNextMoves(multimap<int, pair<int, int>>& points, pair<in
 		int newPrice = isMinimumMode ? minimumMovePrice(startMove, nextPoint) : maximumMovePrice(startMove, nextPoint) ;
 		newPrice += label;
 
-		if (_teleportSquares.find(nextPoint) != _teleportSquares.end())
+		if (_teleportSquares.find(nextPoint) != _teleportSquares.end()) {
 			nextPoint = *find_if(_teleportSquares.begin(), _teleportSquares.end(), [nextPoint](pair<int, int> point) { return point != nextPoint; });
-
+			if (_viewedPoints.find(nextPoint) != _viewedPoints.end())
+				continue;
+		}
 		auto it = find_if(points.begin(), points.end(), [&](pair<int, pair<int, int>> point) { return point.second == nextPoint; });
 		if (it != end(points)) {
 			if (newPrice < (*it).first) {
@@ -141,8 +143,6 @@ void KnightBoard::createNextMoves(multimap<int, pair<int, int>>& points, pair<in
 }
 
 int KnightBoard::minimumMovePrice(const pair<int, int>& startPoint, const pair<int, int>& endPoint) {
-	if (!isMoveValid(startPoint, endPoint))
-		return invalidMove;
 	if (_waterSquares.find(endPoint) != _waterSquares.end())
 		return waterMoves;
 	if (_lavaSquares.find(endPoint) != _lavaSquares.end())
@@ -151,8 +151,6 @@ int KnightBoard::minimumMovePrice(const pair<int, int>& startPoint, const pair<i
 }
 
 int KnightBoard::maximumMovePrice(const pair<int, int>& startPoint, const pair<int, int>& endPoint) {
-	if (!isMoveValid(startPoint, endPoint))
-		return invalidMove;
 	return -minimumMovePrice(startPoint, endPoint);
 }
 
