@@ -118,12 +118,12 @@ void KnightBoard::createNextMoves(multimap<int, pair<int, int>>& points, pair<in
 	nextPoints.erase(remove_if(nextPoints.begin(), nextPoints.end(), [&](pair<int, int> point) {
 		return !isPointValid(point) || _viewedPoints.find(point) != _viewedPoints.end() || !isMoveValid(startMove, point); }), nextPoints.end());
 
-	for (auto& nextPoint : nextPoints) {
-		if (_teleportSquares.find(nextPoint) != _teleportSquares.end()) 
-			nextPoint = *find_if(_teleportSquares.begin(), _teleportSquares.end(), [nextPoint](pair<int, int> point) { return point != nextPoint; });
-		
+	for (auto& nextPoint : nextPoints) {				
 		int newPrice = isMinimumMode ? minimumMovePrice(startMove, nextPoint) : maximumMovePrice(startMove, nextPoint) ;
 		newPrice += label;
+
+		if (_teleportSquares.find(nextPoint) != _teleportSquares.end())
+			nextPoint = *find_if(_teleportSquares.begin(), _teleportSquares.end(), [nextPoint](pair<int, int> point) { return point != nextPoint; });
 
 		auto it = find_if(points.begin(), points.end(), [&](pair<int, pair<int, int>> point) { return point.second == nextPoint; });
 		if (it != end(points)) {
